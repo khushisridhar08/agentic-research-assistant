@@ -7,6 +7,7 @@ from planner import create_plan
 from analyzer import analyze_plan
 from reviewer import review_analysis
 from reviser import revise_analysis
+from brief_generator import generate_brief
 
 
 load_dotenv()
@@ -78,6 +79,29 @@ print("\nFeedback:")
 for number, feedback in enumerate(review.feedback, start=1):
     print(f"{number}. {feedback}")
 
-print("\nFeedback:")
-for number, feedback in enumerate(review.feedback, start=1):
-    print(f"{number}. {feedback}")
+brief = generate_brief(
+    client,
+    question,
+    analysis,
+    review
+)
+
+print("\nFINAL RESEARCH BRIEF")
+
+print("\nExecutive Summary:")
+print(brief.executive_summary)
+
+print("\nKey Findings:")
+for number, finding in enumerate(brief.key_findings, start=1):
+    print(f"{number}. {finding}")
+
+print("\nUncertainties:")
+for number, uncertainty in enumerate(brief.uncertainties, start=1):
+    print(f"{number}. {uncertainty}")
+
+print("\nRecommendations:")
+for number, recommendation in enumerate(
+    brief.recommendations,
+    start=1
+):
+    print(f"{number}. {recommendation}")
