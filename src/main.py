@@ -6,6 +6,7 @@ from openai import OpenAI
 from planner import create_plan
 from analyzer import analyze_plan
 from reviewer import review_analysis
+from reviser import revise_analysis
 
 
 load_dotenv()
@@ -45,9 +46,37 @@ for number, uncertainty in enumerate(analysis.uncertainties, start=1):
 
 review = review_analysis(client, question, analysis)
 
-print("\nREVIEW")
+MAX_REVISIONS = 2
+revision_count = 0
+
+while not review.approved and revision_count < MAX_REVISIONS:
+
+    print("\nAnalysis rejected by reviewer.")
+    print("Revising analysis...")
+
+    analysis = revise_analysis(
+        client,
+        question,
+        analysis,
+        review
+    )
+
+    revision_count += 1
+
+    review = review_analysis(
+        client,
+        question,
+        analysis
+    )
+
+print("\nFINAL REVIEW")
 print(f"Score: {review.score}")
 print(f"Approved: {review.approved}")
+print(f"Revisions: {revision_count}")
+
+print("\nFeedback:")
+for number, feedback in enumerate(review.feedback, start=1):
+    print(f"{number}. {feedback}")
 
 print("\nFeedback:")
 for number, feedback in enumerate(review.feedback, start=1):
