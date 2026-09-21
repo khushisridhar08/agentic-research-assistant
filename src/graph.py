@@ -5,11 +5,13 @@ from planner import create_plan
 from analyzer import analyze_plan
 from reviewer import review_analysis
 from reviser import revise_analysis
+from researcher import conduct_research
 from brief_generator import generate_brief
 from langgraph.graph import StateGraph, START, END
 
 from schemas import (
     ResearchPlan,
+    ResearchResults,
     AnalysisResult,
     ReviewResult,
     ResearchBrief,
@@ -20,6 +22,7 @@ class ResearchState(TypedDict, total=False):
     question: str
 
     plan: ResearchPlan
+    research: ResearchResults
     analysis: AnalysisResult
     review: ReviewResult
     brief: ResearchBrief
@@ -37,12 +40,27 @@ def planner_node(state: ResearchState, client: OpenAI):
         "revision_count": 0
     }
 
+def researcher_node(
+    state: ResearchState,
+    client: OpenAI
+):
+
+    research = conduct_research(
+        client,
+        state["question"],
+        state["plan"]
+    )
+
+    return {
+        "research": research
+    }
 
 def analyzer_node(state: ResearchState, client: OpenAI):
     analysis = analyze_plan(
         client,
         state["question"],
-        state["plan"]
+        state["plan"],
+        state["research"]
     )
 
     return {
@@ -114,6 +132,11 @@ def build_graph(client: OpenAI):
     )
 
     workflow.add_node(
+    "researcher",
+    lambda state: researcher_node(state, client)
+    )
+    
+    workflow.add_node(
         "analyzer",
         lambda state: analyzer_node(state, client)
     )
@@ -144,8 +167,13 @@ def build_graph(client: OpenAI):
     )
 
     workflow.add_edge(
-        "analyzer",
-        "reviewer"
+        "planner",
+        "researcher"
+    )
+
+    workflow.add_edge(
+        "researcher",
+        "analyzer"
     )
 
     workflow.add_conditional_edges(

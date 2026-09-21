@@ -8,7 +8,15 @@ class ResearchPlan(BaseModel):
         max_length=5
     )
 
+class ResearchSource(BaseModel):
+    title: str
+    url: str
+    content: str
 
+
+class ResearchResults(BaseModel):
+    sources: list[ResearchSource]
+    
 class AnalysisResult(BaseModel):
     findings: list[str]
     evidence: list[str]
