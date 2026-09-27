@@ -16,9 +16,11 @@ def analyze_plan(
     )
 
     research_text = "\n\n".join(
-        source.content
-        for source in research.sources
-    )
+    f"[{i}] {source.title}\n"
+    f"URL: {source.url}\n"
+    f"Content: {source.content}"
+    for i, source in enumerate(research.sources, start=1)
+)
 
     response = client.responses.parse(
         model="gpt-5.4-mini",
@@ -32,12 +34,14 @@ Your job is to analyze the research question using the
 provided research subtasks.
 
 For the analysis:
-- Address every subtask.
-- Produce clear and specific findings.
-- Include supporting reasoning or evidence.
-- Identify uncertainties, limitations, or missing information.
-- Avoid repeating the same point across multiple findings.
-- Do not invent sources or citations.
+- Base your analysis primarily on the retrieved research.
+- Use the numbered retrieved sources to support your findings.
+- When describing evidence, reference the relevant source number,
+  for example [1] or [2].
+- Do not invent source numbers, URLs, citations, or evidence.
+- Clearly identify uncertainties, conflicting information, or
+  information that is not sufficiently supported by the retrieved
+  sources.
 """
             },
             {
