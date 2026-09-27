@@ -163,11 +163,6 @@ def build_graph(client: OpenAI):
 
     workflow.add_edge(
         "planner",
-        "analyzer"
-    )
-
-    workflow.add_edge(
-        "planner",
         "researcher"
     )
 

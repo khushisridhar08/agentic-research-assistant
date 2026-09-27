@@ -3,6 +3,41 @@ from openai import OpenAI
 from schemas import ResearchPlan, ResearchResults, ResearchSource
 
 
+def extract_sources(response):
+    sources = []
+    seen_urls = set()
+
+    for item in response.output:
+
+        if item.type != "message":
+            continue
+
+        for content in item.content:
+
+            if content.type != "output_text":
+                continue
+
+            for annotation in content.annotations:
+
+                if annotation.type != "url_citation":
+                    continue
+
+                if annotation.url in seen_urls:
+                    continue
+
+                seen_urls.add(annotation.url)
+
+                sources.append(
+                    ResearchSource(
+                        title=annotation.title,
+                        url=annotation.url,
+                        content=content.text
+                    )
+                )
+
+    return sources
+
+
 def conduct_research(
     client: OpenAI,
     question: str,
@@ -36,13 +71,9 @@ appropriate.
 """
         )
 
-        sources.append(
-            ResearchSource(
-                title=f"Research for: {subtask}",
-                url="",
-                content=response.output_text
-            )
-        )
+        subtask_sources = extract_sources(response)
+
+        sources.extend(subtask_sources)
 
     return ResearchResults(
         sources=sources
