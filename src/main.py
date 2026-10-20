@@ -27,6 +27,13 @@ def main():
 
     load_dotenv()
 
+    if os.getenv("ENABLE_LIVE_API") != "true":
+        print(
+            "Live API calls are disabled. "
+            "Set ENABLE_LIVE_API=true to enable them."
+        )
+        return
+
     api_key = os.getenv("OPENAI_API_KEY")
 
     if not api_key:
@@ -34,10 +41,15 @@ def main():
             "OPENAI_API_KEY was not found in the environment."
         )
 
-    client = OpenAI(api_key=api_key)
+    client = OpenAI(
+    api_key=api_key,
+    timeout=60.0,
+    max_retries=0
+)
 
     question = (
-        "How is generative AI changing software engineering?"
+        "What are the main benefits and limitations of "
+        "AI coding assistants for software developers?"
     )
 
     try:

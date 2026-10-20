@@ -3,7 +3,7 @@ from types import SimpleNamespace
 from researcher import extract_sources, conduct_research
 from schemas import ResearchPlan
 from unittest.mock import Mock
-
+import pytest
 
 
 def test_extract_sources_returns_unique_citations():
@@ -169,3 +169,34 @@ def test_conduct_research_processes_all_subtasks():
 
     assert result.sources[2].title == "Source Three"
     assert result.sources[2].url == "https://example.com/source-three"
+
+
+def test_conduct_research_raises_error_when_no_sources():
+    from researcher import conduct_research
+    from schemas import ResearchPlan
+
+    client = Mock()
+
+    # Simulate a web-search response with no citations.
+    response = Mock()
+    response.output = []
+
+    client.responses.create.return_value = response
+
+    plan = ResearchPlan(
+        question="How is AI changing software engineering?",
+        subtasks=[
+            "Research AI coding tools",
+            "Research developer productivity",
+            "Research software quality",
+        ],
+    )
+
+    with pytest.raises(ValueError, match="no cited sources"):
+        conduct_research(
+            client,
+            plan.question,
+            plan,
+        )
+
+    assert client.responses.create.call_count == 3

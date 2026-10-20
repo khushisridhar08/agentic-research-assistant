@@ -38,6 +38,7 @@ def extract_sources(response):
     return sources
 
 
+
 def conduct_research(
     client: OpenAI,
     question: str,
@@ -45,19 +46,16 @@ def conduct_research(
 ) -> ResearchResults:
 
     sources = []
+    seen_urls = set()
 
     for subtask in plan.subtasks:
 
         response = client.responses.create(
             model="gpt-5.6-luna",
-            tools=[
-                {
-                    "type": "web_search"
-                }
-            ],
+            tools=[{"type": "web_search"}],
             input=f"""
-Research the following subtask as part of answering a larger
-research question.
+Research the following subtask as part of answering
+a larger research question.
 
 Main research question:
 {question}
@@ -65,16 +63,26 @@ Main research question:
 Research subtask:
 {subtask}
 
-Find relevant and reliable information that helps answer this
-subtask. Focus on factual information and recent sources when
-appropriate.
+Find relevant and reliable information that helps answer
+this subtask. Focus on factual information and recent
+sources when appropriate.
+
+Provide a concise, factual research summary and cite
+the sources used.
 """
         )
 
         subtask_sources = extract_sources(response)
 
-        sources.extend(subtask_sources)
+        for source in subtask_sources:
+            if source.url not in seen_urls:
+                seen_urls.add(source.url)
+                sources.append(source)
 
-    return ResearchResults(
-        sources=sources
-    )
+    if not sources:
+        raise ValueError(
+            "Research failed: no cited sources were found "
+            "for any of the research subtasks."
+        )
+
+    return ResearchResults(sources=sources)

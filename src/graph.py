@@ -171,6 +171,11 @@ def build_graph(client: OpenAI):
         "analyzer"
     )
 
+    workflow.add_edge(
+    "analyzer",
+    "reviewer"
+    )
+
     workflow.add_conditional_edges(
         "reviewer",
         route_after_review,
