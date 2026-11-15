@@ -182,3 +182,49 @@ This project is intended to explore practical patterns for building reliable LLM
 ## License
 
 This project is for educational and portfolio purposes.
+
+
+## Backend API
+
+The application uses FastAPI to expose the LangGraph
+multi-agent research workflow through REST endpoints.
+
+### API Endpoints
+
+- `GET /api/health` — Check backend availability.
+- `POST /api/research` — Submit a research question.
+
+### Run the Backend
+
+Install dependencies:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+Start the development server:
+
+```bash
+PYTHONPATH=src python -m uvicorn api:app --reload --app-dir src
+```
+
+Open the API documentation:
+
+http://127.0.0.1:8000/docs
+
+### API Safety
+
+Live OpenAI API execution is disabled by default.
+
+Set `ENABLE_LIVE_API=true` only when intentionally
+running paid research requests.
+
+### Run Tests
+
+```bash
+PYTHONPATH=src python -m pytest tests/ -v
+```
+
+The test suite uses mocked API calls to validate the
+research workflow without consuming OpenAI credits.
+

@@ -3,24 +3,9 @@ import os
 from dotenv import load_dotenv
 from openai import OpenAI
 
-from graph import build_graph
-
+from service import run_research
 
 MAX_REVISIONS = 2
-
-
-def run_research(client: OpenAI, question: str):
-
-    graph = build_graph(client)
-
-    initial_state = {
-        "question": question,
-        "revision_count": 0
-    }
-
-    result = graph.invoke(initial_state)
-
-    return result
 
 
 def main():
