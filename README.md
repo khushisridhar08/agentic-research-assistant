@@ -228,3 +228,145 @@ PYTHONPATH=src python -m pytest tests/ -v
 The test suite uses mocked API calls to validate the
 research workflow without consuming OpenAI credits.
 
+## Phase 2 — FastAPI Backend
+
+The Agentic Research Assistant includes a FastAPI backend that exposes the LangGraph multi-agent research workflow through REST API endpoints.
+
+### Features
+
+- REST API integration with the existing LangGraph research workflow
+- Pydantic request and response validation
+- Input validation for research questions
+- Structured JSON responses containing research results and review feedback
+- Error handling for failed research workflows
+- Environment-based control of live OpenAI API execution
+- Automated API testing using pytest and mocked OpenAI calls
+- Interactive API documentation using Swagger UI
+
+### Project Structure
+
+The backend uses the following modules:
+
+| File | Purpose |
+|---|---|
+| `src/api.py` | Defines FastAPI endpoints and handles HTTP requests |
+| `src/api_schemas.py` | Defines Pydantic request and response models |
+| `src/service.py` | Executes the LangGraph research workflow |
+| `src/graph.py` | Defines the multi-agent workflow |
+| `src/main.py` | Provides command-line execution |
+| `tests/test_api.py` | Tests API behavior and error handling |
+
+### Installation
+
+Clone the repository and navigate to the project directory.
+
+Create and activate a Python virtual environment:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+Install dependencies:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+### Environment Configuration
+
+Create a `.env` file in the project root:
+
+```env
+OPENAI_API_KEY=your_openai_api_key
+ENABLE_LIVE_API=false
+```
+
+Live OpenAI API execution is disabled by default to prevent unintended API charges.
+
+The `.env` file must not be committed to GitHub.
+
+### Running the FastAPI Server
+
+From the project root, run:
+
+```bash
+PYTHONPATH=src python -m uvicorn api:app --reload --app-dir src
+```
+
+Open Swagger UI:
+
+http://127.0.0.1:8000/docs
+
+### API Endpoints
+
+**GET `/api/health`**
+
+Checks whether the backend is running.
+
+**POST `/api/research`**
+
+Accepts a research question and invokes the multi-agent workflow when live API execution is enabled.
+
+Example request:
+
+```json
+{
+  "question": "How is AI changing software engineering?"
+}
+```
+
+When live execution is disabled, the API returns a response with `"status": "disabled"`.
+
+When enabled, a successful research request returns the generated brief, review feedback, and revision count.
+
+### Input Validation
+
+Research questions must:
+
+- Contain at least 10 characters after trimming whitespace
+- Not exceed 1,000 characters
+- Not consist entirely of whitespace
+
+Invalid requests return HTTP 422.
+
+### Error Handling
+
+- **200:** Request processed successfully or live research disabled
+- **422:** Invalid research request
+- **502:** Research workflow execution failed
+- **503:** OpenAI API key is missing when live execution is enabled
+
+### Automated Testing
+
+Run the complete test suite:
+
+```bash
+PYTHONPATH=src python -m pytest tests/ -v
+```
+
+The current test suite contains **16 passing tests**, covering the multi-agent workflow, FastAPI endpoints, input validation, successful responses, and failure handling.
+
+API integration tests use mocks to avoid unnecessary OpenAI API charges.
+
+### Current Limitations
+
+- Research execution is synchronous and may take time to complete.
+- Research history is not yet persisted in a database.
+- A frontend interface has not yet been implemented.
+- Source citation traceability requires further improvement.
+- Authentication and rate limiting are required before publicly exposing paid research execution.
+
+### Next Steps
+
+**Phase 3 — React + TypeScript Frontend**
+
+Build a user interface for submitting research questions, displaying generated reports, viewing review results, and exporting research briefs.
+
+**Phase 4 — Database and Background Processing**
+
+Add PostgreSQL persistence, research history, and asynchronous job execution.
+
+**Phase 5 — Deployment**
+
+Add Docker, CI/CD with GitHub Actions, deployment configuration, and production documentation.
